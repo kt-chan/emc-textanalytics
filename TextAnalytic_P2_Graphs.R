@@ -32,8 +32,6 @@ print(ggplot(data.frame(term=names(termFrequency), freq=termFrequency),
 
 inspect(dtm[1:10,1:10])
 
-
-
 # WordCloud
 ## findFreqTerms(dtm[1,], 10)
 ## freq1 = data.frame(sort(colSums(as.matrix(dtm[1,])), decreasing=TRUE))
