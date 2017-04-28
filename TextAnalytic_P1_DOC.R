@@ -62,20 +62,20 @@ docs <- tm_map(docs, stripWhitespace)
 docs <- tm_map(docs, removeWords, c(stopwords("english"), my.stopwords))
 
 
-#Word Stemming
-docs_tmp <- tm_map(docs, stemDocument, language = "english")
-
-stemCompletion2 <- function(x, dictionary) {
-  x <- unlist(strsplit(as.character(x), " "))
-  # Unexpectedly, stemCompletion completes an empty string to
-  # a word in dictionary. Remove empty string to avoid above issue.
-  x <- x[x != ""]
-  x <- stemCompletion(x, dictionary=dictionary)
-  x <- paste(x, sep="", collapse=" ")
-  PlainTextDocument(stripWhitespace(x))
-}
-
-docs <- tm_map(docs_tmp, stemCompletion2, dictionary = docs)
+## #Word Stemming
+## docs_tmp <- tm_map(docs, stemDocument, language = "english")
+## 
+## stemCompletion2 <- function(x, dictionary) {
+##   x <- unlist(strsplit(as.character(x), " "))
+##   # Unexpectedly, stemCompletion completes an empty string to
+##   # a word in dictionary. Remove empty string to avoid above issue.
+##   x <- x[x != ""]
+##   x <- stemCompletion(x, dictionary=dictionary)
+##   x <- paste(x, sep="", collapse=" ")
+##   PlainTextDocument(stripWhitespace(x))
+## }
+## 
+## docs <- tm_map(docs_tmp, stemCompletion2, dictionary = docs)
 
 ## Transformation to document term matrix
 docs <- Corpus(VectorSource(docs))
