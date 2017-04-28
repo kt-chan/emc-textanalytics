@@ -12,8 +12,12 @@ dtm <- DocumentTermMatrix(docs,
 )
 
 
+## Remove all terms appears less than 10% of the documents
+dtm <- dtm[,which(table(dtm$j) >= 0.10 * nrow(dtm))]
+
 ## Remove sparse terms which happen at least for 10% of the documents, 
 dtm <- removeSparseTerms(dtm, .90)
+
 
 ## Take the most freq at 2 sigma level
 tfidf <- tapply(dtm$v/slam::row_sums(dtm)[dtm$i], dtm$j, mean) * log2(tm::nDocs(dtm)/slam::col_sums(dtm > 0))
