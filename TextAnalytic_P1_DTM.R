@@ -82,7 +82,7 @@ docs <- tm_map(docs, removeWords, c(stopwords("english"), my.stopwords))
 docs <- Corpus(VectorSource(docs))
 
 ## Calculate the DTM
-dtm <- DocumentTermMatrix(docs, control = list(stemming = TRUE, stopwords = TRUE, minWordLength = 2, removeNumbers = TRUE, removePunctuation = TRUE))
+dtm <- DocumentTermMatrix(docs, control = list(stemming = FALSE, stopwords = TRUE, minWordLength = 2, removeNumbers = TRUE, removePunctuation = TRUE))
 
 ## Remove all terms appears less than 10% of the documents
 dtm <- dtm[,which(table(dtm$j) >= 0.10 * nrow(dtm))]
