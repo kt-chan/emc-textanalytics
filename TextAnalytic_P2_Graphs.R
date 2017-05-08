@@ -1,26 +1,6 @@
 ## Generate DTM from source files
-source('./scripts/TextAnalytic_P1_DOC.R')
+source('./scripts/TextAnalytic_P1_DTM.R')
 
-dtm <- DocumentTermMatrix(docs, 
-                          control = list(minWordLength = c(2, Inf), 
-                                         weighting = function(x) weightTfIdf(x, normalize = TRUE), 
-                                         stemming = FALSE, 
-                                         tolower = TRUE, 
-                                         stopwords = TRUE, 
-                                         removeNumbers = TRUE, 
-                                         removePunctuation = TRUE)
-)
-
-
-## Remove all terms appears less than 10% of the documents
-dtm <- dtm[,which(table(dtm$j) >= 0.10 * nrow(dtm))]
-
-## Remove sparse terms which happen at least for 10% of the documents, 
-dtm <- removeSparseTerms(dtm, .90)
-
-## Take the most freq at 2 sigma level
-tfidf <- tapply(dtm$v/slam::row_sums(dtm)[dtm$i], dtm$j, mean) * log2(tm::nDocs(dtm)/slam::col_sums(dtm > 0))
-dtm <- dtm[, tfidf >= quantile(tfidf, 0.95)]
 
 
 # =========================================================================
@@ -33,9 +13,8 @@ print(ggplot(data.frame(term=names(termFrequency), freq=termFrequency),
         xlab("Terms") + ylab("tf-idf") + 
         coord_flip())
 
-inspect(dtm[1:10,1:10])
 
-dtm
+
 
 # WordCloud
 ## findFreqTerms(dtm[1,], 10)
