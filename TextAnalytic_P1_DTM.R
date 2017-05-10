@@ -1,17 +1,21 @@
 # Clean the enviroment
 rm(list=ls())
 
-# Start
-library(tm) 	# Framework for text mining. 
-library(SnowballC) 	# Provides wordStem() for stemming. 
+# Load up R packages including a few we only need later:
+library(tm)
 library(topicmodels)
-library(qdap) 	# Quantitative discourse analysis of transcripts. 
-library(qdapDictionaries) 	
-library(dplyr) 	# Data preparation and pipes %>%. 
-library(RColorBrewer) 	# Generate palette of colours for plots. 
-library(ggplot2) 	# Plot word frequencies. 
-library(scales) 	# Include commas in numbers. 
-library(Rgraphviz) 	# Correlation plots
+library(doParallel)
+library(ggplot2)
+library(scales)
+library(tidyverse)
+library(RColorBrewer)
+library(wordcloud)
+
+## library(qdap) 	# Quantitative discourse analysis of transcripts. 
+## library(qdapDictionaries) 	
+## library(dplyr) 	# Data preparation and pipes %>%. 
+## library(Rgraphviz) 	# Correlation plots
+
 
 ## Customization
 # file directory
@@ -62,6 +66,19 @@ docs <- tm_map(docs, removeNumbers)
 docs <- tm_map(docs, stripWhitespace)
 docs <- tm_map(docs, removeWords, c(stopwords("english"), my.stopwords))
 
+## Transformation to document term matrix
+docs <- Corpus(VectorSource(docs))
+
+## Calculate the DTM
+dtm <- DocumentTermMatrix(docs, control = list(stemming = FALSE, stopwords = TRUE, minWordLength = 3))
+
+## Remove sparse terms which happen at least for 10% of the documents, 
+dtm <- removeSparseTerms(dtm, .90)
+
+## Take the most freq at 2 sigma level
+tfidf <- tapply(dtm$v/slam::row_sums(dtm)[dtm$i], dtm$j, mean) * log2(tm::nDocs(dtm)/slam::col_sums(dtm > 0))
+dtm <- as.DocumentTermMatrix(dtm[, tfidf >= quantile(tfidf, 0.95)])
+
 
 ## #Word Stemming
 ## docs_tmp <- tm_map(docs, stemDocument, language = "english")
@@ -77,21 +94,3 @@ docs <- tm_map(docs, removeWords, c(stopwords("english"), my.stopwords))
 ## }
 ## 
 ## docs <- tm_map(docs_tmp, stemCompletion2, dictionary = docs)
-
-## Transformation to document term matrix
-docs <- Corpus(VectorSource(docs))
-
-## Calculate the DTM
-dtm <- DocumentTermMatrix(docs, control = list(stemming = FALSE, stopwords = TRUE, minWordLength = 2, removeNumbers = TRUE, removePunctuation = TRUE))
-
-## Remove all terms appears less than 10% of the documents
-dtm <- dtm[,which(table(dtm$j) >= 0.10 * nrow(dtm))]
-
-## Remove sparse terms which happen at least for 10% of the documents, 
-dtm <- removeSparseTerms(dtm, .90)
-
-## Take the most freq at 2 sigma level
-tfidf <- tapply(dtm$v/slam::row_sums(dtm)[dtm$i], dtm$j, mean) * log2(tm::nDocs(dtm)/slam::col_sums(dtm > 0))
-summary(tfidf)
-
-dtm <- as.DocumentTermMatrix(dtm[, tfidf >= quantile(tfidf, 0.95)])
