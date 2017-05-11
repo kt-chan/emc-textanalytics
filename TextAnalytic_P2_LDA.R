@@ -20,9 +20,9 @@ clusterEvalQ(cluster, {
 })
 
 folds <- 5
-n=dtm$nrow
-splitfolds <- sample(1:folds, n, replace = TRUE)
-candidate_k <- seq(2, n, 2) # candidates for how many topics
+splitfolds <- sample(1:folds, dtm$nrow, replace = TRUE)
+candidate_k <- seq(2, dtm$ncol, 2) # candidates for how many topics
+
 clusterExport(cluster, c("dtm", "burnin", "iter", "keep", "splitfolds", "folds", "candidate_k"))
 
 # we parallelize by the different number of topics.  A processor is allocated a value
@@ -38,8 +38,7 @@ system.time({
       train_set <- dtm[splitfolds != i , ]
       valid_set <- dtm[splitfolds == i, ]
       
-      fitted <- LDA(train_set, k = k, method = "Gibbs",
-                    control = list(burnin = burnin, iter = iter, keep = keep) )
+      fitted <- LDA(train_set, k = k, method = "Gibbs", control = list(burnin = burnin, iter = iter, keep = keep) )
       results_1k[i,] <- c(k, perplexity(fitted, newdata = valid_set))
     }
     return(results_1k)

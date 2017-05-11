@@ -1,7 +1,7 @@
 ## Generate DTM from source files
 source('/home/admin/Test/scripts/TextAnalytic_P2_LDA.R')
 
-k=10
+k=3
 LDA_Gibbs <- list(alpha = alpha, verbose=0, prefix = tempfile(), save=0,  seed=as.integer(Sys.time()), keep=keep, iter=iter, burnin=burnin, thin=thin)
 lda_model = LDA(dtm, k, method= "Gibbs", control =LDA_Gibbs)
 
@@ -9,7 +9,8 @@ p <- posterior(lda_model)
 w1 <- as.data.frame(t(p$terms)) 
 w2 <- w1 %>% mutate(word = rownames(w1)) %>% gather(topic, weight, -word) 
 
-# =====================Presentation of results===============
+# =====================Presentation of Visualization===============
+print("Visualizing the topic model in graphs ... ")
 
 # =========================================================================
 # Wordcloud
@@ -17,14 +18,15 @@ w2 <- w1 %>% mutate(word = rownames(w1)) %>% gather(topic, weight, -word)
 
 # approach to drawing word clouds of all topics from an object created with LDA,
 n <- 100
+box <- 3
 palette = "Greens"
 
 ## set temporary directory
 ## wd <- setwd(tempdir())
 i<-1
-j<-lda_model@k
-if(j >5) {j=5; i=round(lda_model@k/5)}
-par(mfrow=c(i,j), bg = "grey95", oma=c(0,0,2,0))
+j<-k
+if(j >box) {j=min(box, j); i=ceiling(lda_model@k/box)}
+par(mfrow=c(i,j), bg = "grey95", oma=c(1,1,7,1))
 
 # create a PNG for each frame of the animation
 for(i in 1:ncol(w1)){
