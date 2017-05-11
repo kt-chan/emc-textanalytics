@@ -3,6 +3,8 @@ rm(list=ls())
 
 # Load up R packages including a few we only need later:
 library(tm)
+library(R.utils)
+library(data.table)
 library(topicmodels)
 library(doParallel)
 library(ggplot2)
@@ -10,7 +12,6 @@ library(scales)
 library(tidyverse)
 library(RColorBrewer)
 library(wordcloud)
-
 ## library(qdap) 	# Quantitative discourse analysis of transcripts. 
 ## library(qdapDictionaries) 	
 ## library(dplyr) 	# Data preparation and pipes %>%. 
@@ -20,14 +21,20 @@ library(wordcloud)
 ## Customization
 # file directory
 setwd("/home/admin/Test")
-docs.dir <- file.path(getwd(), "textmining")
-#docs.dir <- file.path(getwd(), "sample")
+#docs.dir <- file.path(getwd(), "textmining")
+docs.dir <- file.path(getwd(), "sample")
+
+## Clear all plots and graphs
+dev.off()
+unlink(c("*.png"))
 
 # stop words
 my.stopwords <- c("can","dont","didnt","also","as","just", "im", "the", "one", "will")
 
+print("ingesting files and performing text pre-processing")
+
 # load files into corpus, get listing of .txt files in directory
-files.names <- list.files(docs.dir,pattern="*.txt")
+files.names <- list.files(docs.dir,pattern="*")
 
 # Copute the size of the files
 files.sizes <- sapply(X = files.names, FUN = function(file) { file.info(file.path(docs.dir, file))$size/(10^3) } )
@@ -50,10 +57,10 @@ hist(file.stats$chars, main = paste("Histogram of chars"))
 par(mfrow=c(1, 1))
 
 #create corpus from vector
-docs.origin <- Corpus(DirSource(docs.dir))
 docs <- Corpus(DirSource(docs.dir))
 
 ## #start preprocessing
+
 # remove non-ascii characters, and url
 docs <- tm_map(docs, function(x) gsub("http[[:alnum:]]*", "", x))
 docs <- tm_map(docs, function(x) iconv(x,to="ASCII"))
@@ -77,7 +84,7 @@ dtm <- removeSparseTerms(dtm, .90)
 
 ## Take the most freq at 2 sigma level
 tfidf <- tapply(dtm$v/slam::row_sums(dtm)[dtm$i], dtm$j, mean) * log2(tm::nDocs(dtm)/slam::col_sums(dtm > 0))
-dtm <- as.DocumentTermMatrix(dtm[, tfidf >= quantile(tfidf, 0.95)])
+dtm <- as.DocumentTermMatrix(dtm[, tfidf >= quantile(tfidf, 0.50)])
 
 
 ## #Word Stemming

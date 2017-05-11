@@ -1,15 +1,17 @@
 ## Generate DTM from source files
-source('./scripts/TextAnalytic_P1_DTM.R')
+source('/home/admin/Test/scripts/TextAnalytic_P1_DTM.R')
 
-k=10
 iter=2000     ## number of Gibbs iterations, by default equals 2000.
 thin=2000     ## number of omitted in-between Gibbs iterations, by default equals iter.
 burnin=1000   ## number of omitted Gibbs iterations at beginning, by default equals 0.
-keep = 50     ## if a positive integer, the log-likelihood is saved every keep iterations.
-alpha = 1/k   ## initial value for alpha.
+keep= 50     ## if a positive integer, the log-likelihood is saved every keep iterations.
+alpha= 1   ## initial value for alpha.
 
 
 #----------------N-fold cross-validation, different numbers of topics----------------
+
+print("performing cross-validation on LDA...")
+
 cluster <- makeCluster(detectCores(logical = TRUE) - 1) # leave one CPU spare...
 registerDoParallel(cluster)
 
@@ -58,7 +60,3 @@ print(
 ## Run with optimized K
 print(paste("best k value = ", results_df$k[which.min(results_df$perplexity)])) ## this take the minimum
 
-k=20
-LDA_Gibbs <- list(alpha = alpha, verbose=0, prefix = tempfile(), save=0,  seed=as.integer(Sys.time()), keep=keep, iter=iter, burnin=burnin, thin=thin)
-lda_model = LDA(dtm, k, method= "Gibbs", control =LDA_Gibbs)
-print(terms(lda_model, 10))
