@@ -12,6 +12,7 @@ library(scales)
 library(tidyverse)
 library(RColorBrewer)
 library(wordcloud)
+library(corrplot)
 ## library(qdap) 	# Quantitative discourse analysis of transcripts. 
 ## library(qdapDictionaries) 	
 ## library(dplyr) 	# Data preparation and pipes %>%. 
@@ -30,7 +31,9 @@ loadData <- function(dir=file.path(getwd()), pattern="*.txt", top) {
   tgt[src[src$responsibilities == src$requirements,"sk"]] = 1
   src[tgt==1,]$responsibilities = NULL
   src<-src[,c("sk", "responsibilities", "requirements", "qualifications")]
+  src<-src[,c("sk", "responsibilities")]
   if(!missing(top)) src<-src[1:top,]
+  
   docs <- Corpus(DataframeSource(src))
 
   return(docs) 
@@ -141,7 +144,6 @@ printGraphs <- function(dtm, k, method= "Gibbs", alpha=1, iter=2000, thin=2000, 
   
   ## Clear all plots and graphs
   if(!is.null(dev.list())) dev.off()
-  unlink(c("*.png"))
   
   lda_model = LDA(dtm, k, method = method, control = list(alpha = alpha, prefix = tempfile(), keep=keep, iter=iter, burnin=burnin, thin=thin))
   
@@ -190,7 +192,11 @@ printGraphs <- function(dtm, k, method= "Gibbs", alpha=1, iter=2000, thin=2000, 
   d1 <- w2[order(-w2$weight), ]
   d2 <- by(d1, d1["topic"], head, n=10)
   d2 <- Reduce(rbind, d2)
+  
   print(ggplot(data = d2, aes(y = word, x = topic)) +geom_tile(aes(fill = weight)) + scale_fill_gradient(low = "white", high = "steelblue"))
+  corrplot(cor(as.matrix(dtm)), method = "color", order = "AOE")
+
+  
   
   # =========================================================================
   # INSPECT FREQUENT WORDS AND PLOT THEM 
@@ -210,31 +216,30 @@ printGraphs <- function(dtm, k, method= "Gibbs", alpha=1, iter=2000, thin=2000, 
 }
 
 
-getDTM <- function(stemming = FALSE, alpha =1, folds = 3, top){
+getDTM <- function(stemming = FALSE, stopwords, top){
   
   ## Clear all plots and graphs
   if(!is.null(dev.list())) dev.off()
-  unlink(c("*.png"))
-  
+
   # file directory
   setwd("/home/admin/Test")
 
-  # user define variables
-  stopwords <- c("can","dont","didnt","also","as","just", "im", "the", "one", "will")
-  
-  
   docs <- loadData(file.path(getwd(), "sample"), "*.csv", top)
   docs <- processText(docs, stopwords)
-  dtm <- processDTM(docs, stemming, .90, .50)
+  dtm <- processDTM(docs, stemming, .95, .25)
   
   return(dtm)
   
 }
 
-dtm <- getDTM()
+
+# user define variables
+stopwords <- c("can","dont","didnt","also","as","just", "im", "the", "one", "will", "work", "assist", "attendantsecurity")
+
+dtm <- getDTM(stemming = FALSE, stopwords = stopwords)
 print(dtm)
-k <- validateLDA(dtm, alpha = 1, folds = 3)
-## printGraphs(dtm, alpha=1, k=6) 
+## k <- validateLDA(dtm, alpha = 1, folds = 3)
+printGraphs(dtm, alpha=0.1, k=3)
 
 ## free some memory
 ## rm(list=setdiff(ls(), c("docs", "dtm")))
