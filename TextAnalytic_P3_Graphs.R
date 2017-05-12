@@ -43,7 +43,7 @@ for(i in 1:ncol(w1)){
 title("The Key Topics", outer=TRUE)
 
 # =========================================================================
-# print out the first 10th terms ## print(terms(lda_model, 10)) ##
+# heatmap
 # =========================================================================
 
 par(mfrow=c(1,1))
@@ -51,7 +51,7 @@ par(mfrow=c(1,1))
 d1 <- w2[order(-w2$weight), ]
 d2 <- by(d1, d1["topic"], head, n=10)
 d2 <- Reduce(rbind, d2)
-print(ggplot(data = d2, aes(y = word, x = topic)) +geom_tile(aes(fill = weight)))
+print(ggplot(data = d2, aes(y = word, x = topic)) +geom_tile(aes(fill = weight)) + scale_fill_gradient(low = "white", high = "steelblue"))
 
 # =========================================================================
 # INSPECT FREQUENT WORDS AND PLOT THEM 

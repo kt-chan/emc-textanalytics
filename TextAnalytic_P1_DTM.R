@@ -29,7 +29,7 @@ if(!is.null(dev.list())) dev.off()
 unlink(c("*.png"))
 
 # user define variables
-my.stopwords <- c("can","dont","didnt","also","as","just", "im", "the", "one", "will")
+my.stopwords <- c("can","dont","didnt","also","as","just", "im", "the", "one", "will", "related", "perform")
 stemming = FALSE
 
 print("ingesting files and performing text pre-processing")
@@ -62,8 +62,8 @@ src <- read.csv(file.path(docs.dir, files.names), header = TRUE, stringsAsFactor
 tgt <- rep(0, nrow(src))
 tgt[src[src$responsibilities == src$requirements,"sk"]] = 1
 src[tgt==1,]$responsibilities = NULL
-src<-src[,c("sk", "responsibilities", "requirements")]
-src<-src[,c("sk", "responsibilities")]
+src<-src[,c("sk", "responsibilities", "requirements", "qualifications")]
+## src<-src[,c("sk", "responsibilities")]
 docs <- Corpus(DataframeSource(src))
 
 ## #start preprocessing
